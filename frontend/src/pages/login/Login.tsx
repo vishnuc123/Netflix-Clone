@@ -10,14 +10,21 @@ const Login = () => {
     e.preventDefault()
     const nameRegex = /^[a-zA-Z]{2,}(?: [a-zA-Z]+)*$/;
 
-    if(signupState === "sign up"){
-      if(!firstName.match(nameRegex) || !email || !pass){
-        console.log("validation error")
+    if(signupState === "Sign up"){
+      if(!firstName.match(nameRegex) || !firstName ){
+        console.log("first name is require")
+        return
       }
     }
-    console.log('hai',email)
-    console.log('hai',pass)
-    console.log('hai',firstName)
+    if(!email){
+      console.log('email is required')
+      return
+    }
+    if(!pass || pass.length >12 || pass.length < 8){
+      console.log("password is not matching the requirement")
+    }
+
+    console.log('success===>>')
   }
 
   return (
