@@ -1,4 +1,6 @@
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import React, { useState } from 'react';
+import { auth } from '../../config/firebase';
 
 const Login = () => {
   const [signupState,setSignUpState] = useState<string>('Sign in')
@@ -6,16 +8,10 @@ const Login = () => {
   const [email,setEmail] = useState<string>('')
   const [pass,setPass] = useState<string>('')
 
-  const handleFormData = (e:React.FormEvent) => {
+  const handleFormData = async (e:React.FormEvent) => {
     e.preventDefault()
     const nameRegex = /^[a-zA-Z]{2,}(?: [a-zA-Z]+)*$/;
 
-    if(signupState === "Sign up"){
-      if(!firstName.match(nameRegex) || !firstName ){
-        console.log("first name is require")
-        return
-      }
-    }
     if(!email){
       console.log('email is required')
       return
@@ -23,10 +19,39 @@ const Login = () => {
     if(!pass || pass.length >12 || pass.length < 8){
       console.log("password is not matching the requirement")
     }
+    
+     if (signupState === "Sign up") {
+    if (!firstName.match(nameRegex)) {
+      console.log("Valid first name is required");
+      return;
+    }
 
-    console.log('success===>>')
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+      const user = userCredential.user;
+
+      // Optional: set display name
+      await updateProfile(user, {
+        displayName: firstName,
+      });
+
+      console.log("User signed up:", user);
+    } catch (error) {
+      console.error("Signup error:", error);
+    }
+  } else {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+      const user = userCredential.user;
+
+      console.log("User signed in:", user);
+    } catch (error) {
+      console.error("Signin error:", error);
+    }
   }
-
+    
+  }
+  
   return (
     <div className="relative w-full h-screen">
       <img
