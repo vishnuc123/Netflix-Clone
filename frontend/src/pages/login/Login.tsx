@@ -1,57 +1,68 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/Auth';
 import { auth } from '../../config/firebase';
 
 const Login = () => {
-  const [signupState,setSignUpState] = useState<string>('Sign in')
-  const [firstName,setFirstName] = useState<string>('')
-  const [email,setEmail] = useState<string>('')
-  const [pass,setPass] = useState<string>('')
+  const Auth = useAuth()
+  const navigate = useNavigate()
 
-  const handleFormData = async (e:React.FormEvent) => {
+
+  useEffect(() => {
+    if (Auth?.isLogged) {
+      navigate('/', { replace: true }) // replace login in browser history
+    }
+  }, [Auth?.isLogged, navigate])
+  const [signupState, setSignUpState] = useState<string>('Sign in')
+  const [firstName, setFirstName] = useState<string>('')
+  const [email, setEmail] = useState<string>('')
+  const [pass, setPass] = useState<string>('')
+
+  const handleFormData = async (e: React.FormEvent) => {
     e.preventDefault()
     const nameRegex = /^[a-zA-Z]{2,}(?: [a-zA-Z]+)*$/;
 
-    if(!email){
+    if (!email) {
       console.log('email is required')
       return
     }
-    if(!pass || pass.length >12 || pass.length < 8){
+    if (!pass || pass.length > 12 || pass.length < 8) {
       console.log("password is not matching the requirement")
     }
-    
-     if (signupState === "Sign up") {
-    if (!firstName.match(nameRegex)) {
-      console.log("Valid first name is required");
-      return;
+
+    if (signupState === "Sign up") {
+      if (!firstName.match(nameRegex)) {
+        console.log("Valid first name is required");
+        return;
+      }
+
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        const user = userCredential.user;
+
+        // Optional: set display name
+        await updateProfile(user, {
+          displayName: firstName,
+        });
+
+        console.log("User signed up:", setSignUpState('Sign in'));
+      } catch (error) {
+        console.error("Signup error:", error);
+      }
+    } else {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, pass);
+        const user = userCredential.user;
+
+        console.log("User signed in:", navigate('/'));
+      } catch (error) {
+        console.error("Signin error:", error);
+      }
     }
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-      const user = userCredential.user;
-
-      // Optional: set display name
-      await updateProfile(user, {
-        displayName: firstName,
-      });
-
-      console.log("User signed up:", user);
-    } catch (error) {
-      console.error("Signup error:", error);
-    }
-  } else {
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, pass);
-      const user = userCredential.user;
-
-      console.log("User signed in:", user);
-    } catch (error) {
-      console.error("Signin error:", error);
-    }
   }
-    
-  }
-  
+
   return (
     <div className="relative w-full h-screen">
       <img
@@ -63,7 +74,7 @@ const Login = () => {
       <div className="absolute w-full h-full bg-black/60 z-10" />
       <div className="absolute z-20 w-full px-8 py-5 flex justify-between items-center">
         <h1 className="text-red-600 text-3xl font-bold">NETFLIX</h1>
-       
+
       </div>
 
       <div className="fixed w-full px-4 py-24 z-20">
@@ -71,25 +82,25 @@ const Login = () => {
           <h1 className="text-3xl font-bold mb-6">{signupState}</h1>
 
           <form className="w-full flex flex-col space-y-4" onSubmit={handleFormData}>
-            {signupState === "Sign up"?(<input
+            {signupState === "Sign up" ? (<input
               type="text"
-              onChange={(e:React.ChangeEvent<HTMLInputElement>) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setFirstName(e.target.value)
               }}
               placeholder="First Name"
               className="p-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-red-600"
-            />):<></>}
-            
+            />) : <></>}
+
             <input
               type="email"
-              onChange={(e:React.ChangeEvent<HTMLInputElement>) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setEmail(e.target.value)
               }}
               placeholder="Email or phone number"
               className="p-3 bg-gray-700 rounded focus:outline-none focus:ring-2 focus:ring-red-600"
             />
             <input
-            onChange={(e:React.ChangeEvent<HTMLInputElement>) => {
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setPass(e.target.value)
               }}
               type="password"
@@ -114,12 +125,12 @@ const Login = () => {
 
           <div className="mt-6 text-sm text-gray-400">
             New to Netflix?{' '}
-            {signupState === 'Sign in'?(<button onClick={() => setSignUpState('Sign up')} className="text-white hover:underline">
-              Sign in now
-            </button>):(<button onClick={() => setSignUpState('Sign in')} className="text-white hover:underline">
-              Sign up now
+            {signupState === 'Sign in' ? (<button onClick={() => setSignUpState('Sign up')} className="text-white hover:underline">
+              Sign Up now
+            </button>) : (<button onClick={() => setSignUpState('Sign in')} className="text-white hover:underline">
+              Sign In now
             </button>)}
-            
+
           </div>
 
           <p className="mt-4 text-xs text-gray-400">
