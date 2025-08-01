@@ -4,6 +4,7 @@ import Home from './pages/home/Home'
 import { ProtectedRoute } from './context/ProtectedRoute'
 import MovieDetail from './pages/DetailedPages/movieDetail'
 import VideoPlayer from './components/Video/VideoPlayer'
+import MyList from './pages/MyList/MyList'
 
 const App = () => {
   return (
@@ -26,6 +27,12 @@ const App = () => {
           <Route path='/watch' element={
             <ProtectedRoute>
               <VideoPlayer />
+            </ProtectedRoute>
+          }
+          />
+          <Route path='/mylist' element={
+            <ProtectedRoute>
+              <MyList />
             </ProtectedRoute>
           }
           />
